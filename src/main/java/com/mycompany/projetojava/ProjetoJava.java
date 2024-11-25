@@ -19,7 +19,11 @@ import entities.Pacientes;
 import entities.ParticipanteEvento;
 import entities.Pedidos;
 import entities.Restaurante;
-
+import java.util.Comparator;
+import java.util.LinkedList;
+import java.util.PriorityQueue;
+import java.util.Queue;
+import java.util.Stack;
 /**
  *
  * @author j040v
@@ -45,6 +49,7 @@ public class ProjetoJava {
         Restaurante restauran = new Restaurante();
         Pedidos pedido = new Pedidos();
         Mesas mesa = new Mesas();
+        
 
         Scanner s = new Scanner(System.in);
 
@@ -85,8 +90,10 @@ public class ProjetoJava {
         clinica.addMedico(new Medicos("Carlos", "Cardiologista", true, 5521));
         clinica.addMedico(new Medicos("Jose", "Psiquiatra", true,4233));
         clinica.addMedico(new Medicos("Katia", "Neurologista", false, 5523));
-        clinica.addMedico(new Medicos("Mauricio", "Ginecologista", true, 1224));
-
+        clinica.addMedico(new Medicos("Mauricio", "Ginecologista", true, 1224));     
+        
+        
+        
         Scanner s = new Scanner(System.in);
         SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
         boolean clinicRunning = true;
@@ -134,8 +141,11 @@ public class ProjetoJava {
                     break;
                     
                 case 3:
-
-                    clinica.imprimirCatalogo();                    
+                    
+                    
+                                      
+                    clinica.imprimirCatalogo();   
+                    
 
                     break;
 
@@ -225,7 +235,20 @@ public class ProjetoJava {
 
     public static void eventosMenu(Eventos evento, Events event, ParticipanteEvento participante, ListaEncadeadaEventos listaEventos, ListaEncadeadaParticipantes listaParticipantes) throws ParseException {
         Scanner s = new Scanner(System.in);
+        Stack<Events> historicoEventos = new Stack<>();
         SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+        
+        PriorityQueue<ParticipanteEvento> filaInscricoes = new PriorityQueue<>(new Comparator<ParticipanteEvento>() {
+            @Override
+            public int compare(ParticipanteEvento p1, ParticipanteEvento p2) {
+                // Prioridade maior primeiro (VIP -> prioridade 1)
+                return Integer.compare(p1.getVIP(), p2.getVIP());
+            }
+        });
+        
+        Queue<ParticipanteEvento> filaVIPs = new LinkedList<>();
+
+        Queue<ParticipanteEvento> filaNaoVIPs = new LinkedList<>();
         int capacidadeEvento = 0;
         boolean clinicaRunning = true;
 
@@ -240,6 +263,8 @@ public class ProjetoJava {
             System.out.println("7. Alterar dados do evento");
             System.out.println("8. Evento mais flopado");
             System.out.println("9. Mais inscrições");
+            System.out.println("10. Últimas inscrições");
+            System.out.println("11. Fila apenas dos VIP");
             System.out.println("0. Voltar ao Menu Principal");
             System.out.print("Escolha uma opção: ");
 
@@ -286,14 +311,26 @@ public class ProjetoJava {
                     s.nextLine();
                     System.out.println("Digite o nome do evento que irá participar: ");
                     String eventoNome = s.nextLine();
+                    s.nextLine();
+                    System.out.println("Cliente VIP: ");
+                    System.out.println("1-Sim / 2-Não");
+                    int VIP = s.nextInt();
 
                     Events encontrarEvento = evento.buscarEvento(eventoNome);
                     if (encontrarEvento != null) {
                         if (encontrarEvento.getCapacity() == 0) {
                             System.out.println("Evento Lotado.");
                         } else {
-                            participante = new ParticipanteEvento(nomeParticipante, inscricaoEvento, eventoNome);
+                            participante = new ParticipanteEvento(nomeParticipante, inscricaoEvento, eventoNome, VIP);
                             evento.addParticipantes(participante);
+                            
+                            historicoEventos.push(encontrarEvento);
+                            filaInscricoes.add(participante);
+                            if (VIP == 1) {
+                            filaVIPs.add(participante);
+                        } else {
+                            filaNaoVIPs.add(participante);
+                        }
 
                             listaParticipantes.inserirParticipante(participante);
 
@@ -402,6 +439,31 @@ public class ProjetoJava {
                 case 9:
                     ParticipanteEvento maisInscricoes = evento.encontrarMaisInscricoes();
                     System.out.println(maisInscricoes);
+                    break;
+                case 10:
+                    if (!historicoEventos.isEmpty()) {
+                        System.out.println("Últimos eventos inscritos:");
+
+                        // Exibir até 3 últimos eventos
+                        int numEventos = Math.min(historicoEventos.size(), 3);
+                        for (int i = 0; i < numEventos; i++) {
+                            System.out.println(historicoEventos.get(historicoEventos.size() - 1 - i));
+                        }
+                    } else {
+                        System.out.println("Nenhum evento inscrito ainda.");
+                    }
+                    break;
+                
+                case 11:
+                    if (!filaVIPs.isEmpty()) {
+                        System.out.println("Fila de VIPs: ");
+                        for (ParticipanteEvento p : filaVIPs) {
+                            System.out.println(p);
+                        }
+                    } else {
+                        System.out.println("Não há VIPs na fila.");
+                    }
+                    break;
                 case 0:
                     clinicaRunning = false;
                     break;

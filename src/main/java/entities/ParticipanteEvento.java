@@ -12,15 +12,17 @@ public class ParticipanteEvento {
     private String name;
     private Integer registration;
     private String registeredEvent;
+    private Integer VIP;
     private Integer numeroEvento = 0;
 
     public ParticipanteEvento() {
     }
 
-    public ParticipanteEvento(String name, Integer registration, String registeredEvent) {
+    public ParticipanteEvento(String name, Integer registration, String registeredEvent, Integer VIP) {
         this.name = name;
         this.registration = registration;
         this.registeredEvent = registeredEvent;     
+        this.VIP = VIP;
         
     }
 
@@ -51,6 +53,10 @@ public class ParticipanteEvento {
     public String getRegisteredEvent() {
         return registeredEvent;
     }
+
+    public Integer getVIP() {
+        return VIP;
+    }  
 
     public void setRegisteredEvent(String registeredEvent) {
         this.registeredEvent = registeredEvent;
